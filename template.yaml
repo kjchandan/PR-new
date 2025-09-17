@@ -1,0 +1,40 @@
+name: Project Generator Configuration
+
+domain:
+  type: dropdown
+  label: Select a Domain
+  options:
+    - Insurance
+    - Banking
+    - HealthCare
+    - Education
+
+frontend:
+  type: dropdown
+  label: Select a UI Framework
+  options:
+    - Angular
+    - React
+
+backend:
+  type: dropdown
+  label: Select a Backend Platform
+  options:
+    - Java (Spring)
+    - Node.js (NestJS)
+    - Kafka
+
+database:
+  type: dropdown
+  label: Select a Database
+  options:
+    - PostgreSQL
+
+actions:
+  open_in:
+    - name: Open in VSCode
+      link: "https://vscode.dev/github/{repo}"
+    - name: Open in Replit
+      link: "https://replit.com/github/{repo}"
+    - name: Open in AI Studio
+      link: "https://aistudio.example.com/project/{repo}"
