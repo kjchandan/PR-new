@@ -1,40 +1,97 @@
-name: Project Generator Configuration
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: project-generator-config
+  title: Project Generator Configuration
+  description: Select domain, frontend, backend, and database to generate a project scaffold
+  tags:
+    - generator
+    - frontend
+    - backend
+    - database
+spec:
+  owner: user:your-username
+  type: service
+  parameters:
+    - title: Project Stack Selection
+      required:
+        - domain
+        - frontend
+        - backend
+        - database
+      properties:
+        domain:
+          title: Select a Domain
+          type: string
+          enum:
+            - Insurance
+            - Banking
+            - HealthCare
+            - Education
+        frontend:
+          title: UI Framework
+          type: string
+          enum:
+            - Angular
+            - React
+        backend:
+          title: Backend Platform
+          type: string
+          enum:
+            - Java (Spring)
+            - Node.js (NestJS)
+            - Kafka
+        database:
+          title: Database
+          type: string
+          enum:
+            - PostgreSQL
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+              - github.kyndryl.net
 
-domain:
-  type: dropdown
-  label: Select a Domain
-  options:
-    - Insurance
-    - Banking
-    - HealthCare
-    - Education
+  steps:
+    - id: fetch
+      name: Fetch Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton  # You must prepare templates for combinations or use conditionals
+        values:
+          domain: ${{ parameters.domain }}
+          frontend: ${{ parameters.frontend }}
+          backend: ${{ parameters.backend }}
+          database: ${{ parameters.database }}
+          repoUrl: ${{ parameters.repoUrl }}
 
-frontend:
-  type: dropdown
-  label: Select a UI Framework
-  options:
-    - Angular
-    - React
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        description: Generated project for ${{ parameters.domain }} with ${{ parameters.frontend }} frontend and ${{ parameters.backend }} backend.
+        repoUrl: ${{ parameters.repoUrl }}
 
-backend:
-  type: dropdown
-  label: Select a Backend Platform
-  options:
-    - Java (Spring)
-    - Node.js (NestJS)
-    - Kafka
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
 
-database:
-  type: dropdown
-  label: Select a Database
-  options:
-    - PostgreSQL
-
-actions:
-  open_in:
-    - name: Open in VSCode
-      link: "https://vscode.dev/github/{repo}"
-    - name: Open in Replit
-      link: "https://replit.com/github/{repo}"
-    - name: Open in AI Studio
-      link: "https://aistudio.example.com/project/{repo}"
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in VSCode
+        url: https://vscode.dev/github/${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
+      - title: Open in Replit
+        url: https://replit.com/github/${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
+      - title: Open in AI Studio
+        url: https://aistudio.example.com/project/${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
+      - title: Open in Catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
